@@ -4,6 +4,8 @@ into a climate model. The repository consists of a module that creates a shared 
 model (aka GCM) agnostic, and a reference implementation into CESM and the Community Atmospheric Model
 (CAM).
 
+The goal of the project is to create a framework that facilitates the entire development/training/testing/running of ML-based parametrizations in GCMs. It aims to reduce the development cycle allowing the ML model to run in a compiled form (i.e. LibTorch) while training and evaluating the ML-model in an interpreted environment. 
+
 
 
 ## Supported functionality
