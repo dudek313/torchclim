@@ -43,35 +43,8 @@ void torch_wrap_predict(float i_buffer[], int i_size, float o_buffer[], int* o_s
 	static thread_local torch::jit::script::Module module;
 	static thread_local bool is_loaded = false;
 	bool do_log = false;
+	int status = 0;
 
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch/gaia-deploy-main/traced_model.pt";
-	//const char * script_path = "traced_model.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/v2/export_model_cam4_v2.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/v3/export_model_cam4.pt";
-	// model v1: const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/v4/export_model_cam4_08-05-22.pt";
-	// model v2: 
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/model-2/export_model_08-30-22.pt";
-	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/model-3/export_model_09-01-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/model-4/export_model_09-02-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/v5/export_model_09-15-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/v5/export_model_09-16-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/v5/export_model_09-19-22--no-TS.pt";
-	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_3_100_no_F/export_model_10-12-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_4_100_no_F_no_Z3/export_model_10-12-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_5_100_no_F_no_Z3_positive_PREC/export_model_10-17-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_6_100_no_F_positive_PREC_rect/export_model_10-18-22.pt";
-	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_7_100_no_F_no_Z3_positive_PREC_rect/export_model_10-18-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_8_100_no_F_positive_PREC_softplus/export_model_10-18-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_9_100_no_F_all_positive_softplus/export_model_10-18-22.pt";
-	//--const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_9b_100_no_F_all_positive_rect/export_model_10-19-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_9b_100_no_F_all_positive_rect_seed123/export_model_11-21-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_9b_100_no_F_all_positive_rect_seed123/export_seed_345.pt";
-	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_9b_100_no_F_all_positive_rect_seed123/export_seed_609.pt";
-	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_9b_100_no_F_all_positive_rect_seed123/export_seed_112.pt";
-	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_9b_100_no_F_all_positive_rect_1000eps/export_model_11-21-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_A_RELHUM_Q//export_model_11-03-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_B/export_model_11-11-22.pt";
-	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/version_B_relhum_reg/export_model_11-16-22.pt";
 	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/static/static_model.pt";
 	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/seed_609_grad_reg/export_model_01-04-23.pt";
 	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/seed_345_grad_reg_eq_constraints/export_model_01-20-23.pt";
@@ -91,17 +64,23 @@ void torch_wrap_predict(float i_buffer[], int i_size, float o_buffer[], int* o_s
 
 
 	if( !is_loaded ) {
-		try {
-			// Deserialize the ScriptModule from a file using torch::jit::load().
-			module = torch::jit::load( script_path );
-			module.to(torch::kCPU);
-			is_loaded = true;
-		}
-		catch (const c10::Error& e) {
-		std::cerr << "error loading the model 111\n" << e.msg();
+		status = torch_wrap_create( script_path );
+		if( status != MODEL_LOADED_SUCCESSFULLY ) {
         		(*retval) = -1;
-		return;
-  		}
+			return;
+		}
+		is_loaded = true;
+		//try {
+		//	// Deserialize the ScriptModule from a file using torch::jit::load().
+		//	module = torch::jit::load( script_path );
+		//	module.to(torch::kCPU);
+		//	is_loaded = true;
+		//}
+		//catch (const c10::Error& e) {
+		//std::cerr << "error loading the model 111\n" << e.msg();
+        	//	(*retval) = -1;
+		//return;
+  		//}
 	}
 
 

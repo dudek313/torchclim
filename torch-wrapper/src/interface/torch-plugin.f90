@@ -916,7 +916,7 @@ contains
     subroutine predict_model_v6( &
             !inputs on vertical
             qv, t, u, v, omega, z3, &
-            cldliq, cldice &
+            cldliq, cldice, &
 
             !inputs on 1d
             ps, ts, solin, shflx, lhflx, & 
