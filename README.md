@@ -52,7 +52,7 @@ Build steps:
 
 
 ## Building and using the CESM/CAM reference implementation
-Here we demonstrate the process on CESM 1.0.6 by creating an AMIP scenario.
+Here we demonstrate the process on CESM 1.0.6 by creating an AMIP scenario and running it on the Australian NCI/Gadi infrastructure (nci.org.au/).
 
 ```bash
 cd [to/csem/scripts/directory]  
