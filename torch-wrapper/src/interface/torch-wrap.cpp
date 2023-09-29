@@ -48,7 +48,8 @@ void torch_wrap_predict(float i_buffer[], int i_size, float o_buffer[], int* o_s
 	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/static/static_model.pt";
 	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/seed_609_grad_reg/export_model_01-04-23.pt";
 	//-const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/seed_345_grad_reg_eq_constraints/export_model_01-20-23.pt";
-	const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/seed_345_grad_reg_eq_constraints_v2/export_model_03-21-23.pt";
+	//const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/seed_345_grad_reg_eq_constraints_v2/export_model_03-21-23.pt";
+	const char * script_path = "/g/data/w42/daf561/repo/spcam-ml/libtorch-plugin/torch-wrapper/data/seed345_new_vars/export_model_04-26-23.pt";
 
 	//
 
