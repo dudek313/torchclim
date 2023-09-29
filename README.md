@@ -18,9 +18,6 @@ This repository contains two main folders:
 Assuming that you have a climate model or a distributed or parallel application, written in Fortran of c/c++, and you want to introduce an ML/AI model to it. After the installation of the framework, you will need to train your ML/AI model using PyTorch. Once the training is completed, export your surrogate model. Currently, TorchClim supports export as a torch script (with future extensions to support other frameworks aside from PyTorch via the ONYX interface). At this stage you will need to compile the TorchClim plugin, pointing it to the exported surrogate model. At this stage, you will need to load the TorchClim plugin into your GCM. See the reference implementation provided here for an example of how to achieve that.
 
 
-^## Exporting PyTorch models into the framework
-
-
 ## Prerequisites
 TorchClim requires Fortran and c/c++ compilers. The reference implementation was tested using the intel compiler version 2021.5.0. You will need to edit "torch-wrapper/env/load-env.sh" to load the compilers of your choice. 
 
@@ -51,7 +48,7 @@ Build steps:
 
 
 
-## Building and using the CESM/CAM reference implementation
+## Building the CESM/CAM reference implementation with TorchClim
 Here we demonstrate the process on CESM 1.0.6 by creating an AMIP scenario and running it on the Australian NCI/Gadi infrastructure (nci.org.au/).
 
 ```bash
@@ -70,7 +67,7 @@ setenv LD_LIBRARY_PATH `pwd`/climate-model-physics-ml/torch-wrapper/build/src/in
 
 #once all the env_* files are set
 ./configure -case
-cp climate-model-physics-ml/cesm-module/src.cam/* SourceMods/src.cam/
+cp torchclim/cesm-module/src.cam/* SourceMods/src.cam/
 
 #edit Macros.gadi
 #add include Fortran mod path
@@ -91,6 +88,24 @@ ULIBS += -L$(LIBROOT) -lcsm_share -lmct -lmpeu -lpio -L/[absolute path]/climate-
 vim SourceMods/src.cam/machine_learning_model_config.F90
 
 ```
+
+## Configuration options of the CESM/CAM reference implementation
+
+The configuration of the reference implementation is done through the "torchclim/cesm-module/src.cam/machine_learning_model_config.F90" module.
+The following options are implemented:
+
+1. ml_model_skip_first_steps: true/false, steps_to_skip: integer (model steps)\
+   These two parameters enable startup using the original CAM parametrization (true by default for the first 24 hours).
+3. ml_model_enabled: true/false\
+   When set to .false., the original CAM parametrization will be used.
+5. ml_model_standalone: true/false\
+   When set to .false. alongside with 'ml_model_enabled' set to .true., both the original and ML surrogate will run side by side.
+7. radiation_from_ml: true/false\
+   Whether to override the ML radiation variables with the original CAM radiative parametrization.
+9. output_state_vars_from_ctrl_run: true/false\
+   Whether or not to output state variables before and after the intended point of insertion of the surrogate model. This allows to use data from the original CAM parametrization for the initial training of the surrogate model. 
+11. ml_only_in_lat_band: true/false\
+    Together with max_lat and min_lat, limit the surrogate model to a latitude band.
 
 
 
