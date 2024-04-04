@@ -1,5 +1,16 @@
 import torch
 
+"""The following script demonstrated how to export a PyTorch module into a 
+format (torchscript) that can then be loaded by the TorchClim plugin into a 
+GCM.
+
+Here we have a "Dummy" torch.nn Module that is converted into torchscript and
+saved into a file (dummy.pt). Please refer to the PyTorch / torchscript 
+documentation for further details.
+
+"""
+
+
 class Dummy(torch.nn.Module):
     def __init__(self, n_in,n_out):
         super().__init__()
