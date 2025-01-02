@@ -16,7 +16,7 @@ link_directories(interface)
 
 
 add_executable(plugin-test plugin-test.f90)
-set_property(TARGET plugin-test PROPERTY CXX_STANDARD 14)
+set_property(TARGET plugin-test PROPERTY CXX_STANDARD 17)
 #include_directories(interface)
 
 target_include_directories(plugin-test

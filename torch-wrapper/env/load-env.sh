@@ -1,12 +1,13 @@
 #!/bin/bash
 
 module load intel-compiler/2021.5.0
+#module load intel-compiler/2019.5.281
+module load cuda/11.7.0
 
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-export PATH_TO_LIBTORCH=$SCRIPT_DIR/libtorch
+export PATH_TO_ONNX=$SCRIPT_DIR/onnxruntime
 
-
-mkdir $SCRIPT_DIR/../../build
+mkdir $SCRIPT_DIR/../build
 #cd ../../build
 #cmake -DCMAKE_PREFIX_PATH=$PATH_TO_LIBTORCH 
 

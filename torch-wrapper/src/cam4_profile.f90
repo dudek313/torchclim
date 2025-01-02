@@ -15,6 +15,7 @@ module cam4_profile
 
    public :: &
         R8, R4, &
+        state_zeros, &
         state_qv, state_t, state_u, state_v, state_omega, state_z3, &
         state_ps, solin, cam_in_shf, cam_in_lhf, &  
         fsns, fsnt, flns, flnt, fsds, &
@@ -24,7 +25,16 @@ module cam4_profile
    integer,parameter :: R8 = selected_real_kind(12) ! 8 byte real -> SHR_KIND_R8
    integer,parameter :: R4 = selected_real_kind( 6) ! 4 byte real -> SHR_KIND_R4
 
-   
+
+    real(r8), dimension(26):: state_zeros   = (/ &
+           0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, &
+           0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, &
+           0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, &
+           0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, 0.0_r8, &
+           0.0_r8, 0.0_r8 &
+        /)
+
+
 
     real(r8), dimension(26):: state_t   = (/ &
             195.73081970214844_r8, 190.49917602539062_r8, 183.7991180419922_r8, 185.23052978515625_r8, 187.51406860351562_r8, 190.60569763183594_r8, &

@@ -10,6 +10,8 @@ module torch_plugin
     public predict_model_v4
     public predict_model_v5
     public predict_model_v6
+    public predict_model_conv_only_v1
+
 
     ! include the c interface definitions for the private impl. 
     include "torch-wrap-cdef.f90"
@@ -1093,6 +1095,170 @@ contains
             write(*,*) "srfrad: ", srfrad
             write(*,*) "" 
             !write(*,*) "ostacked : ", ostacked 
+         end if
+    end subroutine
+
+
+    subroutine predict_model_conv_only_v1( &
+            !inputs on vertical
+            qv, t, u, v, omega, z3, &
+            cldliq, cldice, &
+
+            !inputs on 1d
+            ps, ts, shflx, lhflx, & 
+
+            !added 1d
+            landfrac, ocnfrac, icefrac, &
+
+            !outputs on vertical
+            pteq, pttend, &            
+            ptecldliq, ptecldice, &
+            dlf, dlf2, &
+            cmfmc, cmfmc2, &
+
+            ! outputs on 1d
+            precc, &
+            precsc, &
+
+            debug_log &
+
+            )
+
+        implicit none
+        REAL(r8), dimension(:), intent(in) :: qv
+        REAL(r8), dimension(:), intent(in) :: t
+        REAL(r8), dimension(:), intent(in) :: u
+        REAL(r8), dimension(:), intent(in) :: v
+        REAL(r8), dimension(:), intent(in) :: omega
+        REAL(r8), dimension(:), intent(in) :: z3
+        REAL(r8), dimension(:), intent(in) :: cldliq
+        REAL(r8), dimension(:), intent(in) :: cldice
+        REAL(r8), intent(in) :: ps
+        REAL(r8), intent(in) :: ts
+        !REAL(r8), intent(in) :: solin 
+        REAL(r8), intent(in) :: shflx
+        REAL(r8), intent(in) :: lhflx
+
+        REAL(r8), intent(in) :: landfrac 
+        REAL(r8), intent(in) :: ocnfrac
+        REAL(r8), intent(in) :: icefrac
+
+        logical , intent(in) :: debug_log 
+
+
+        REAL(r8), dimension(:), intent(out) :: pteq
+        REAL(r8), dimension(:), intent(out) :: ptecldliq
+        REAL(r8), dimension(:), intent(out) :: ptecldice
+        REAL(r8), dimension(:), intent(out) :: pttend
+        REAL(r8), dimension(:), intent(out) :: dlf
+        REAL(r8), dimension(:), intent(out) :: dlf2
+        REAL(r8), dimension(:), intent(out) :: cmfmc
+        REAL(r8), dimension(:), intent(out) :: cmfmc2
+
+        REAL(r8), intent(out) :: precc
+        REAL(r8), intent(out) :: precsc
+
+        !note the implicit conversion from R8 to c_float - since the NN is based
+        !on single prcision output from cesm cam, but is defied as capi type
+        REAL(c_float), dimension((size(t) * 8) + 7) :: istacked
+        REAL(c_float), dimension((size(t) * 6) + (size(cmfmc) * 2) + 2) :: ostacked
+        integer :: sz = 0
+        integer :: sz_int = 0 ! vertical gridbox interfaces
+        integer :: istart, iend = 0
+        integer :: retval = 0
+        integer :: output_size = 0
+
+        if (debug_log) then
+            write(*,*) "torch-plugin debug log, 3D inputs:"
+            write(*,*) "----------------------------------"
+            write(*,*) "temp  : ", t
+            write(*,*) "Qv    : ", qv
+            write(*,*) "U     : ", u
+            write(*,*) "V     : ", v
+            write(*,*) "omega : ", omega
+            write(*,*) "z3    : ", z3
+            write(*,*) "cldliq: ", cldliq
+            write(*,*) "cldice: ", cldice
+            write(*,*) ""
+            write(*,*) "torch-plugin debug log, 2D inputs:"
+            write(*,*) "----------------------------------"
+            write(*,*) "ps   : ", ps
+            write(*,*) "ts   : ", ts
+            !write(*,*) "solin: ", solin
+            write(*,*) "shflx: ", shflx
+            write(*,*) "lhflx: ", lhflx
+            write(*,*) ""
+         end if
+        !write(*,*) "here 1"
+
+        sz = size(t)
+        sz_int = size(cmfmc)
+        output_size = size(ostacked)
+
+        istacked((sz*0) + 1 : sz*1) = qv
+        istacked((sz*1) + 1 : sz*2) = t
+        istacked((sz*2) + 1 : sz*3) = u
+        istacked((sz*3) + 1 : sz*4) = v
+        istacked((sz*4) + 1 : sz*5) = omega
+        istacked((sz*5) + 1 : sz*6) = z3
+        istacked((sz*6) + 1 : sz*7) = cldliq
+        istacked((sz*7) + 1 : sz*8) = cldliq
+
+        istacked((sz*8) + 1) = ps
+        istacked((sz*8) + 2) = ts
+        istacked((sz*8) + 3) = shflx
+        istacked((sz*8) + 4) = lhflx
+        istacked((sz*8) + 5) = landfrac
+        istacked((sz*8) + 6) = ocnfrac
+        istacked((sz*8) + 7) = icefrac
+
+
+        call model_predict_c(                         &
+                        input  = istacked,            &
+                        input_size  = size(istacked), &
+                        output = ostacked,            &
+                        output_size = output_size,    &
+                        retval = retval,              &
+                        loopback = 0                  & !non-zero means test mode
+                )
+
+
+        pttend    = ostacked((sz*0) + 1 : sz*1)
+        pteq      = ostacked((sz*1) + 1 : sz*2)
+        ptecldliq = ostacked((sz*2) + 1 : sz*3)
+        ptecldice = ostacked((sz*3) + 1 : sz*4)
+        dlf       = ostacked((sz*4) + 1 : sz*5)
+        dlf2      = ostacked((sz*5) + 1 : sz*6)
+        
+        istart = (sz*6) + 1
+        iend   = istart + sz_int
+        cmfmc     = ostacked(istart : iend)
+
+        istart = iend + 1
+        iend   = istart + sz_int
+        cmfmc2    = ostacked(istart : iend)
+
+        precc   = ostacked(iend + 1)
+        precsc  = ostacked(iend + 2)
+
+
+        if (debug_log) then
+            !if (.true.) then
+            write(*,*) "torch-plugin debug log, 3D outputs:"
+            write(*,*) "-----------------------------------"
+            write(*,*) "" 
+            write(*,*) "ostacked : ", ostacked 
+            write(*,*) "pttend: ", pttend
+            write(*,*) "pteq  : ", pteq
+            write(*,*) "ptecldliq  : ", ptecldliq
+            write(*,*) "ptecldice  : ", ptecldice
+            write(*,*) "" 
+            write(*,*) "torch-plugin debug log, 2D outputs:"
+            write(*,*) "-----------------------------------"
+            write(*,*) "precc : ", precc
+            write(*,*) "precsc: ", precsc
+            write(*,*) "" 
+            write(*,*) "ostacked : ", ostacked 
          end if
     end subroutine
 
