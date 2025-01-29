@@ -1,5 +1,5 @@
 program test_plugin
-  use torch_plugin, only: predict_model, predict_model_v2
+  use torch_plugin, only: predict_model, predict_model_v2, predict_model_conv_only_v1
   use cam4_profile  
 
   implicit none
@@ -29,6 +29,12 @@ program test_plugin
   real(r8), dimension(26) :: cld       ! total cloud fraction
   real(r8), dimension(26) :: concld    ! total convective cloud fraction
 
+  real(r8), dimension(26) :: ptecldliq ! physics cldliq tendencies
+  real(r8), dimension(26) :: ptecldice ! physics cldice tendencies
+  real(r8), dimension(26) :: dlf       ! total detrained convective cloud water
+  real(r8), dimension(26) :: dlf2      ! total detrained shallow convective cloud water
+  real(r8), dimension(27) :: cmfmc     ! total cloud mass flux deep + shallow
+  real(r8), dimension(27) :: cmfmc2    ! total mass flux from shallow convective
 
   integer :: i
 
@@ -81,7 +87,7 @@ program test_plugin
                precsc, &
                precsl, &
               .true.)
-    else
+    else if( .false. ) then
         call predict_model_v2( &
                state_qv,&
                state_t, &
@@ -125,6 +131,39 @@ program test_plugin
                precsl, &
               .false.)
 
+    else
+        call predict_model_conv_only_v1( &
+               state_qv,&
+               state_t, &
+               state_u, &
+               state_v, &
+               state_omega, &
+               state_z3, &
+               state_zeros, & !cldliq
+               state_zeros, & !cldice
+
+               state_ps, &
+               297._r8, & !TODO: should be TS!
+               cam_in_shf, & ! sensible heat flux from cam_in
+               cam_in_lhf, & ! latend heat flux from cam_in
+
+               landfrac, & 
+               ocnfrac, &
+               icefrac, &
+
+               pteq,     & ! total physics moist tendencies
+               pttend,   & ! total physics heating tendencies
+               ptecldliq,& ! cldliq tendencies
+               ptecldice,& ! cldice tendencies
+               dlf,      & !dlf
+               dlf2,     & !dlf2
+               cmfmc,    & !
+               cmfmc2,   & !
+
+               precc, &
+               precsc, &
+              .false.)
+
     end if
 
     print *,'test...'
@@ -155,20 +194,8 @@ program test_plugin
      write(*,*) '    ]'
      write(*,*) ''
      write(*,*) 'precc = ', precc,''
-     write(*,*) 'precl = ', precl,''
+     write(*,*) 'precl = ', precsc,''
      write(*,*) ''
-     write(*,*) 'fsns = ', fsns,''
-     write(*,*) 'flns = ', flns,''
-     write(*,*) 'fsnt = ', fsnt,''
-     write(*,*) 'flnt = ', flnt,''
-     write(*,*) 'fsds = ', fsds,''
-     write(*,*) 'flds = ', flds,''
-     write(*,*) 'srfrad = ', srfrad,''
-     write(*,*) ''
-     write(*,*) 'soll  = ', soll,''
-     write(*,*) 'solld = ', solld,''
-     write(*,*) 'sols  = ', sols,''
-     write(*,*) 'solsd = ', solsd,''
   end if
 
 

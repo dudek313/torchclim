@@ -7,7 +7,15 @@ cd $SCRIPT_DIR
 #wget "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.11.0%2Bcpu.zip"
 #unzip "libtorch-cxx11-abi-shared-with-deps-1.11.0+cpu.zip"
 
-wget "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip"
-unzip "libtorch-cxx11-abi-shared-with-deps-1.9.0+cpu.zip"
+#wget "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip"
+#unzip "libtorch-cxx11-abi-shared-with-deps-1.9.0+cpu.zip"
 
+#wget "https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip"
+#unzip "libtorch-cxx11-abi-shared-with-deps-1.9.0+cpu.zip"
 
+# Download the required libtorch version
+wget "https://github.com/microsoft/onnxruntime/releases/download/v1.20.1/onnxruntime-linux-x64-1.20.1.tgz"
+
+tar -xzf "onnxruntime-linux-x64-1.20.1.tgz"
+
+mv "onnxruntime-linux-x64-1.20.1" "onnxruntime"
